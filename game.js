@@ -475,6 +475,9 @@ logfile += `Total turns: ${totalturns}\n`;
 logfile += `Total Game Time: ${endgameminutes}:${endgameseconds}.${endgamemillis}\n`;
 logfile += "Game log begins below. \n\n" + game_log;
 let dirnum = 1;
+if(!fs.existsSync(__dirname + "/logs")){
+    fs.mkdirSync(__dirname + "/logs");
+}
 let dirname = __dirname + "/logs/log_" + dirnum + ".txt";
 while(fs.existsSync(dirname)){
     dirnum += 1;
