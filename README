@@ -20,7 +20,7 @@ Enter a command on each of your turns.
 
 -BLOCK: enter a defensive stance. Incoming attacks will do half damage.
 Fireballs will do 0 damage to a blocking target.
-You heal 1 HP if you successfully block an attack or Fireball.
+You heal 1 HP if you successfully block a Fireball.
 
 -ABILITY: use an ability. There are 3 available to the player:
 1. Heal: heals you.
