@@ -1,0 +1,24 @@
+rogueultralite
+
+made by Zirconium (FortiethAtom4 on Github)
+
+# HOW TO PLAY
+
+Enter a command on each of your turns.
+
+-ATTACK: deal damage to a target. If the target is blocking, the damage is halved.
+
+-BLOCK: enter a defensive stance. Incoming attacks will do half damage.
+Fireballs will do 0 damage to a blocking target.
+You heal 1 HP if you successfully block an attack or Fireball.
+
+-ABILITY: use an ability. There are 3 available to the player:
+1. Heal: heals you.
+2. Fireball: deals increased damage. Blocking targets take no damage.
+3. Mana Burst: deals 10 damage that ignores blocks. One-time use.
+
+-NONE: pass your turn. Why would you do that?
+
+-FF: Surrender. 
+
+# GLHF
