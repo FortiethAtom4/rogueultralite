@@ -25,7 +25,7 @@ You heal 1 HP if you successfully block an attack or Fireball.
 -ABILITY: use an ability. There are 3 available to the player:
 1. Heal: heals you.
 2. Fireball: deals increased damage. Blocking targets take no damage.
-3. Mana Burst: deals 10 damage that ignores blocks. One-time use.
+3. Mana Burst: deals massive damage that ignores blocks. Limited uses.
 
 -NONE: pass your turn. Why would you do that?
 
