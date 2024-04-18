@@ -11,7 +11,7 @@ const fs = require("fs");
 *
 *
 *
-* 
+*
 */
 //Player entity.
 function Player(pname,health,dmg){
@@ -24,7 +24,7 @@ function Player(pname,health,dmg){
     1: Value, number (damage amt, heal amt, etc)
     2: Option (scaling number for heal/fireball, charges for mana burst)
     */
-    this.abilities = [["Heal",1,1],["Fireball",2,1],["Mana Burst",15,1]];
+    this.abilities = [["Heal",1,1],["Fireball",1,2],["Mana Burst",10,1,3]];
     this.alive = true;
     this.blocking = false;
 }
@@ -42,19 +42,24 @@ function Enemy(ename, health, dmg, abilities, AI_type){
 }
 let player_name = prompt("Type your username: ");
 let p1 = new Player(player_name,3,1);
-let round = 0; //determines difficulty
+let round = 0; //determines enemy spawns/difficulty
 let turn = 1;
 let totalturns = 0;
 let enemies = [];
 let game_log = "";
-let chosen_upgrade = "N/A";
+let chosen_upgrades = "N/A";
+let win = false;
 //date the game log
 let d = new Date();
+let mm = d.getMinutes();
+if(d.getMinutes() < 10){
+    mm = "0" + d.getMinutes();
+}
 let gamedate = (d.getMonth() + 1) + "/"
 + d.getDate()  + "/"
 + d.getFullYear() + " "
 + d.getHours() + ":"  
-+ d.getMinutes();
++ mm;
 //Makes sure the prompt is a valid number for array-related choices (abilities, enemy targeting).
 function getprompt(string,arraylength){
     let result = prompt(string);
@@ -80,14 +85,26 @@ function attack(attacker,target,changedmg = 0,blockAllowed = true){
     }
     target.health -= attackdamage;
     printlog(`-> ${attacker.username} dealt ${attackdamage} damage to ${target.username}!`);
-    if(target == p1 && p1.blocking){
-        heal(p1,1);
-        printlog(`-> ${p1.username} healed 1 HP for blocking an attack!`);
-    }
     if(target.health <= 0){
         target.health = 0;
         target.alive = false;
     }
+}
+function abilityUpgrade(){
+    printlog(`Congratulations, ${p1.username}! You have earned an ability upgrade!`);
+    console.log("List of abilities:");
+    for(let i = 0; i < p1.abilities.length; i++){
+        console.log(`${i + 1}: ${p1.abilities[i][0]}`);
+    }
+    let choice = getprompt('\nChoose an ability to upgrade by typing in the corresponding number: ',p1.abilities.length);
+    chosen_upgrades = p1.abilities[choice][0];
+    printlog('\n');
+    if(p1.abilities[choice][0] == "Mana Burst"){
+        p1.abilities[choice][2] += 1;
+        printlog("-> Gained one charge of Mana Burst.")
+    }
+    p1.abilities[choice][1] = p1.abilities[choice][1] * 2;
+    printlog(`-> ${p1.abilities[choice][0]} strength increased to ${p1.abilities[choice][1]}.`);
 }
 //Spawns a specific set of enemies for each round.
 function spawn(){
@@ -107,29 +124,36 @@ function spawn(){
         case 4:
             //After Round 3, the player gets to upgrade one ability.
             //Doubles ability effectiveness.
-            printlog(`Congratulations, ${p1.username}! You have earned an ability upgrade!`);
-            console.log("List of abilities:");
-            for(let i = 0; i < p1.abilities.length; i++){
-                console.log(`${i + 1}: ${p1.abilities[i][0]}`);
-            }
-            let choice = getprompt('\nChoose an ability to upgrade by typing in the corresponding number: ',p1.abilities.length);
-            chosen_upgrade = p1.abilities[choice][0];
-            printlog('\n');
-            if(p1.abilities[choice][0] == "Mana Burst"){
-                p1.abilities[choice][2] += 1;
-                printlog("-> Gained one charge of Mana Burst.")
-            }
-            p1.abilities[choice][1] = p1.abilities[choice][1] * 2;
-            printlog(`-> ${p1.abilities[choice][0]} strength increased to ${p1.abilities[choice][1]}.`);
+            abilityUpgrade();
             enemies.push(new Enemy("Healer",20,0,[["Heal", 3],["Defend"]],"aggrocaster"));
-            enemies.push(new Enemy("Wizard",20,0,[["Fireball",4]],"aggrocaster"));
+            enemies.push(new Enemy("Wizard",20,0,[["Fireball",4],["Fireball",4],["Heal",1]],"aggrocaster"));
             enemies.push(new Enemy("Shielder",20,5,[["Defend"]],"defender"));
             break;
         case 5:
             enemies.push(new Enemy("Boss",50,5,[["Fireball",5],["Fireball",5],["Charge",3],["Heal",10]],"spellsword"));
             break;
+        case 6:
+            //another ability upgrade after round 5.
+            abilityUpgrade();
+            console.log("It only gets harder from here...");
+            // summonenemy = new Enemy("Minion",5,1,[],"defensive"); - template for minion
+            enemies.push(new Enemy("Minion",10,3,[],"defensive"));
+            enemies.push(new Enemy("Summoner",100,0,[
+                ["Summon",new Enemy("Minion",10,3,[],"defensive")],
+                ["Summon",new Enemy("Tank Minion",20,5,[["Defend"]],"defender")],
+                ["Summon",new Enemy("Wizard Minion",10,0,[["Fireball",5],["Empower",5,2]],"aggrocaster")]],
+                "summoner"));
+            enemies.push(new Enemy("Minion",10,3,[],"defensive"));
+            break;
+        case 7:
+            enemies.push(new Enemy("Wizard Lord",200,0,[["Fireball",3],["Empower",10,2],
+            ["Summon",new Enemy("Mana Familiar",10,0,[["Mana Burst",5,3]],"aggrocaster")],
+            ["Summon",new Enemy("Revitalize Familiar",10,0,[["Heal",8]],"aggrocaster")]],"aggrocaster"))
+            enemies.push(new Enemy("Book",75,5,[["Defend"],["Heal",5]],"spellsword"))
+            break;
         default:
-            printlog(`\n******Congratulations, ${p1.username}! You Win!******`)
+            printlog(`\n******Congratulations, ${p1.username}! You Win!******`);
+            win = true;
             p1.alive = false;
     }
 }
@@ -178,20 +202,20 @@ function enemyAI(enemy){
             attacker = false;
             break;
         //Summoners are a special class which casts abilities only on specific rounds.
-        //They do not attack or block.
-        //Not yet used.
+        //They do not attack or pass.
         case "summoner":
-            if(turn % 2 == 0){
+            if(turn % 3 == 0){
                 cast_prob = 1;
+                block_prob = 0;
             }else{
+                block_prob = 1;
                 cast_prob = 0;
             }
-            block_prob = 0;
             attacker = false;
             break;
         //spellswords can attack, block, and use abilities. They do not pass.
         case "spellsword":
-            block_prob = 1/3;
+            block_prob = 1/4;
             cast_prob = 1/2;
             break;
         //dummy AI for testing. Does nothing.
@@ -316,7 +340,7 @@ function useAbility(entity){
     }
 }
 //Processes ability effects.
-//Recognized ability names: Heal, Charge, Fireball, Defend, Mana Burst
+//Recognized ability names: Heal, Charge, Fireball, Defend, Mana Burst, Summon, Empower
 function abilityEffect(entity,abilityUsed){
     let target; //entity the ability targets.
     switch(entity.abilities[abilityUsed][0]){
@@ -343,10 +367,11 @@ function abilityEffect(entity,abilityUsed){
             }
             printlog(`-> ${entity.username} casts a Fireball!`);
             if(target.blocking){
+                heal(target,1);
                 printlog(`-> ${target.username} blocked the Fireball!`);
+                printlog(`-> ${target.username} gained 1 HP for blocking the attack!`)
             } else {
                 attack(entity,target,entity.abilities[abilityUsed][1]);
-                printlog(`-> ${entity.username} dealt ${entity.abilities[abilityUsed][1]} damage to ${target.username} with their Fireball!`);
             }
             break;
         //Entity passes the turn, but increases their attack damage permanently.
@@ -367,8 +392,16 @@ function abilityEffect(entity,abilityUsed){
         //Entity summons a minion to their aid. Enemy-only for now.
         case "Summon":
             //assumes second item in tuple is the entity to be summoned.
-            enemies.push(entity.abilities[abilityUsed[1]]);
-            console.log(`${entity.username} summons ${entity.abilities[abilityUsed[1]].username}!`)
+            //creates a copy of enemy to summon
+            let entitytemplate = entity.abilities[abilityUsed][1];
+            let summonentity = new Enemy(
+                entitytemplate.username,
+                entitytemplate.health,
+                entitytemplate.dmg,
+                entitytemplate.abilities,
+                entitytemplate.AI_type);
+            enemies.push(summonentity);
+            printlog(`-> ${entity.username} summons ${summonentity.username}!`)
             break;
         //Entity deals damage to a target which ignores resistances.
         //Has a limited number of uses (determined by the third value in the array).
@@ -379,13 +412,29 @@ function abilityEffect(entity,abilityUsed){
                 }else{
                     target = p1;
                 }
+                printlog(`-> ${entity.username} used a Mana Burst on ${target.username}!`);
                 attack(entity,target,entity.abilities[abilityUsed][1],false);
-                printlog(`-> ${entity.username} used a Mana Burst on ${target.username} for ${entity.abilities[abilityUsed][1]} damage!`);
                 entity.abilities[abilityUsed][2] -= 1;
                 printlog(`-> ${entity.username} has ${entity.abilities[abilityUsed][2]} Mana Bursts remaining.`);
             } else{
                 printlog(`X No more Mana Bursts left for ${entity.username}.`);
             }
+            break;
+        //Increase health, maximum health, and damage of an ally.
+        //health and maxhealth are second value, damage is third.
+        case "Empower":
+            if(entity == p1){
+                target = p1;
+            }else{
+                target = enemies[Math.trunc(Math.random()*enemies.length)];
+            }
+            target.maxhealth += entity.abilities[abilityUsed][1];
+            heal(target,entity.abilities[abilityUsed][1]);
+            target.dmg += entity.abilities[abilityUsed][2];
+            printlog(`-> ${entity.username} empowers ${target.username}!`);
+            printlog(`-> ${target.username} health and maximum health increased by ${entity.abilities[abilityUsed][1]}.`);
+            printlog(`-> ${target.username} damage increased by ${entity.abilities[abilityUsed][2]}.`);
+            break;
         case "none":
             break;
         default:
@@ -400,7 +449,6 @@ function heal(target,amt){
 //game loop
 let start = true
 while(p1.alive){
-    console.log(totalturns);
     //first round
     if(start){
         round += 1;
@@ -409,19 +457,25 @@ while(p1.alive){
     }
     //new round
     if(enemies.length == 0 && !start){
-        round += 1;
-        console.log("Round complete. New wave starting shortly.\n");
+        console.log(`Round ${round} complete!\n`);
         //at the beginning of each round, player's abilities grow stronger (except mana burst)
-        printlog(`${p1.username}'s abilities grow stronger!`);
-        for(let i = 0; i < p1.abilities.length; i++){
-            if(p1.abilities[i][0] != "Mana Burst"){
-                p1.abilities[i][1] += p1.abilities[i][2];
-                printlog(`-> ${p1.abilities[i][0]} strength increased to ${p1.abilities[i][1]}.`);
-            }
-        }
+        printlog(`${p1.username} grows stronger!`);
         p1.maxhealth += round + 2;
         p1.dmg += 1;
         heal(p1,p1.maxhealth/2);
+        printlog(`-> Maximum health increased to ${p1.maxhealth}.`);
+        printlog(`-> Attack damage increased to ${p1.dmg}.`)
+        for(let i = 0; i < p1.abilities.length; i++){
+            if(p1.abilities[i][0] == "Mana Burst"){
+                p1.abilities[i][1] += p1.abilities[i][3];
+            }
+            p1.abilities[i][1] += p1.abilities[i][2];
+            printlog(`-> ${p1.abilities[i][0]} strength increased to ${p1.abilities[i][1]}.`);
+        }
+        printlog("\n");
+        printlog("A new round begins...");
+        round += 1;
+        turn = 1;
         spawn();
         if(!p1.alive) {continue;}
     }
@@ -463,14 +517,24 @@ console.log(`Total turns: ${totalturns}`);
 let endd = new Date() - d; //total game time in milliseconds
 let endgameminutes = Math.trunc(endd/60000);
 let endgameseconds = Math.trunc((endd % 60000)/1000);
+//time formatting, adding 0s to make more readable
+if(endgameseconds < 10){
+    endgameseconds = "0" + endgameseconds;
+}
 let endgamemillis = endd % 1000;
+if(endgamemillis < 100){
+    endgamemillis = "0" + endgamemillis;
+}
+if(endgamemillis < 10){
+    endgamemillis = "0" + endgamemillis;
+}
 console.log(`Total Game Time: ${endgameminutes}:${endgameseconds}.${endgamemillis}`);
-
 //create log file header
 let logfile = "";
 logfile += `game.js Game Log from ${gamedate}\n\n`;
 logfile += `Username: ${p1.username}\n`;
-logfile += `Chosen Ability Upgrade: ${chosen_upgrade}\n`;
+logfile += `Outcome: ${win ? "Win" : "Loss"}\n`
+logfile += `Chosen Ability Upgrade: ${chosen_upgrades}\n`;
 logfile += `Total turns: ${totalturns}\n`;
 logfile += `Total Game Time: ${endgameminutes}:${endgameseconds}.${endgamemillis}\n`;
 logfile += "Game log begins below. \n\n" + game_log;
@@ -483,8 +547,8 @@ while(fs.existsSync(dirname)){
     dirnum += 1;
     dirname = __dirname + "/logs/log_" + dirnum + ".txt";
 }
-
 //records game events in a log file
 fs.writeFileSync(dirname,logfile);
 console.log(`\n-> Game history recorded in ${dirname}.`);
 console.log("\n~~THANKS FOR PLAYING~~\n");
+ 
