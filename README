@@ -2,7 +2,17 @@ rogueultralite
 
 made by Zirconium (FortiethAtom4 on Github)
 
+# INSTALL
+1. Get Node.js.
+2. navigate to this directory in a terminal, then type `npm install`. Npm will do the heavy lifting.
+3. Boom done
+
 # HOW TO PLAY
+
+How to start the game:
+1. Navigate to this directory in a terminal.
+2. type `node game.js` and press Enter.
+3. The game will play in the terminal window.
 
 Enter a command on each of your turns.
 
