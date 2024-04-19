@@ -5,7 +5,7 @@ const fs = require("fs");
 *
 *
 * A simple turn-based action game.
-* Try to defeat five rounds of enemies.
+* Try to defeat seven rounds of enemies.
 * To run, type 'node game.js' at the command line.
 * Good luck!
 *
@@ -91,12 +91,28 @@ function attack(attacker,target,changedmg = 0,blockAllowed = true){
     }
 }
 function abilityUpgrade(){
-    printlog(`Congratulations, ${p1.username}! You have earned an ability upgrade!`);
+    printlog(`Congratulations, ${p1.username}! You have earned an stat upgrade!`);
     console.log("List of abilities:");
-    for(let i = 0; i < p1.abilities.length; i++){
+    let i = 0;
+    for(i; i < p1.abilities.length; i++){
         console.log(`${i + 1}: ${p1.abilities[i][0]}`);
     }
-    let choice = getprompt('\nChoose an ability to upgrade by typing in the corresponding number: ',p1.abilities.length);
+    console.log(`${i + 1}: Increase HP`);
+    console.log(`${i + 2}: Increase Attack Damage`);
+    let choice = getprompt('\nChoose a stat to upgrade by typing in the corresponding number: ',p1.abilities.length + 2);
+    if(choice == p1.abilities.length){
+        p1.maxhealth = p1.maxhealth * 2;
+        p1.health = p1.maxhealth;
+        chosen_upgrades += "Maximum Health";
+        printlog(`-> Maximum health increased to ${p1.maxhealth}.`)
+        return;
+    }
+    if(choice == p1.abilities.length + 1){
+        p1.dmg = p1.dmg * 2;
+        chosen_upgrades += "Attack Damage";
+        printlog(`-> Attack damage increased to ${p1.dmg}.`)
+        return;
+    }
     chosen_upgrades = p1.abilities[choice][0];
     printlog('\n');
     if(p1.abilities[choice][0] == "Mana Burst"){
@@ -124,16 +140,18 @@ function spawn(){
         case 4:
             //After Round 3, the player gets to upgrade one ability.
             //Doubles ability effectiveness.
+            chosen_upgrades = "";
             abilityUpgrade();
-            enemies.push(new Enemy("Healer",20,0,[["Heal", 3],["Defend"]],"aggrocaster"));
-            enemies.push(new Enemy("Wizard",20,0,[["Fireball",4],["Fireball",4],["Heal",1]],"aggrocaster"));
-            enemies.push(new Enemy("Shielder",20,5,[["Defend"]],"defender"));
+            enemies.push(new Enemy("Healer",25,0,[["Heal", 3],["Defend"]],"aggrocaster"));
+            enemies.push(new Enemy("Wizard",25,0,[["Fireball",4],["Fireball",4],["Heal",1]],"aggrocaster"));
+            enemies.push(new Enemy("Shielder",40,5,[["Defend"]],"defender"));
             break;
         case 5:
             enemies.push(new Enemy("Boss",50,5,[["Fireball",5],["Fireball",5],["Charge",3],["Heal",10]],"spellsword"));
             break;
         case 6:
             //another ability upgrade after round 5.
+            chosen_upgrades += ", ";
             abilityUpgrade();
             console.log("It only gets harder from here...");
             // summonenemy = new Enemy("Minion",5,1,[],"defensive"); - template for minion
@@ -146,9 +164,9 @@ function spawn(){
             enemies.push(new Enemy("Minion",10,3,[],"defensive"));
             break;
         case 7:
-            enemies.push(new Enemy("Wizard Lord",200,0,[["Fireball",3],["Empower",10,2],
+            enemies.push(new Enemy("Wizard Lord",200,0,[["Fireball",3],["Fireball",3],["Empower",10,2],["Heal",5],
             ["Summon",new Enemy("Mana Familiar",10,0,[["Mana Burst",5,3]],"aggrocaster")],
-            ["Summon",new Enemy("Revitalize Familiar",10,0,[["Heal",8]],"aggrocaster")]],"aggrocaster"))
+            ["Summon",new Enemy("Revitalizing Familiar",10,0,[["Heal",10]],"aggrocaster")]],"aggrocaster"))
             enemies.push(new Enemy("Book",75,5,[["Defend"],["Heal",5]],"spellsword"))
             break;
         default:
@@ -183,7 +201,7 @@ function enemyAI(enemy){
             cast_prob = 0.5;
             block_prob = 0.4;
             break;
-        //caster enemies will occasionally use abilities or take a defensive stance.
+        //caster enemies will use abilities or occasionally take a defensive stance.
         //casters do not attack.
         case "caster":
             if(enemy.health < enemy.maxhealth / 2){
@@ -191,14 +209,14 @@ function enemyAI(enemy){
             } else {
                 block_prob = 0;
             }
-            cast_prob = 0.3;
+            cast_prob = 0.5;
             attacker = false;
             break;
         //aggrocasters use abilities much more often than casters.
         //They do not attack or block.
         case "aggrocaster":
             block_prob = 0;
-            cast_prob = 0.7;
+            cast_prob = 1;
             attacker = false;
             break;
         //Summoners are a special class which casts abilities only on specific rounds.
@@ -394,12 +412,7 @@ function abilityEffect(entity,abilityUsed){
             //assumes second item in tuple is the entity to be summoned.
             //creates a copy of enemy to summon
             let entitytemplate = entity.abilities[abilityUsed][1];
-            let summonentity = new Enemy(
-                entitytemplate.username,
-                entitytemplate.health,
-                entitytemplate.dmg,
-                entitytemplate.abilities,
-                entitytemplate.AI_type);
+            let summonentity = structuredClone(entitytemplate);
             enemies.push(summonentity);
             printlog(`-> ${entity.username} summons ${summonentity.username}!`)
             break;
@@ -534,7 +547,7 @@ let logfile = "";
 logfile += `game.js Game Log from ${gamedate}\n\n`;
 logfile += `Username: ${p1.username}\n`;
 logfile += `Outcome: ${win ? "Win" : "Loss"}\n`
-logfile += `Chosen Ability Upgrade: ${chosen_upgrades}\n`;
+logfile += `Chosen Ability Upgrades: ${chosen_upgrades}\n`;
 logfile += `Total turns: ${totalturns}\n`;
 logfile += `Total Game Time: ${endgameminutes}:${endgameseconds}.${endgamemillis}\n`;
 logfile += "Game log begins below. \n\n" + game_log;
