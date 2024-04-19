@@ -91,7 +91,7 @@ function attack(attacker,target,changedmg = 0,blockAllowed = true){
     }
 }
 function abilityUpgrade(){
-    printlog(`Congratulations, ${p1.username}! You have earned an stat upgrade!`);
+    printlog(`Congratulations, ${p1.username}! You have earned a stat upgrade!`);
     console.log("List of abilities:");
     let i = 0;
     for(i; i < p1.abilities.length; i++){
