@@ -69,6 +69,12 @@ function getprompt(string,arraylength){
     }
     return result - 1;
 }
+//Recognize player error for inputting commands
+function cmdprompt(string,entity){
+    let command = prompt(string);
+    console.log("\n");
+    inputCommand(entity,command);
+}
 //Alternate print function which saves the print statement. Used for logging game history.
 function printlog(string){
     game_log += string + "\n";
@@ -303,6 +309,7 @@ function chooseTarget(){
 function inputCommand(entity,command){
     switch(command.toLowerCase()){
         //attack opponent
+        case "a":
         case "attack":
             let target;
             if(entity != p1){
@@ -315,11 +322,13 @@ function inputCommand(entity,command){
             attack(entity,target);
             break;
         //block
+        case "b":
         case "block":
             entity.blocking = true;
             printlog(`-> ${entity.username} enters a defensive stance!`)
             break;
         //use an ability
+        case "y":
         case "ability":
             useAbility(entity);
             break;
@@ -333,7 +342,8 @@ function inputCommand(entity,command){
             printlog(`-> ${entity.username} passed this turn!`)
             break;
         default:
-            printlog("X Unknown command.");
+            printlog("X Unknown command, please try again.")
+            cmdprompt("Choose your command: [a]ttack, [b]lock, abilit[y], none, ff: ",entity);
             break;
     }
 }
@@ -499,9 +509,7 @@ while(p1.alive){
     console.log(`You`);
     displayHealthBar(p1);
     //player turn
-    let command = prompt("Choose your command: attack, block, ability, none, ff: ");
-    console.log("\n");
-    inputCommand(p1,command);
+    cmdprompt("Choose your command: [a]ttack, [b]lock, abilit[y], none, ff: ",p1);
     if(!p1.alive) {continue;} //end game immediately on surrender
     //enemy turn
     for(let i = 0; i < enemies.length; i++){
