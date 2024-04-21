@@ -80,7 +80,7 @@ function printlog(string){
     game_log += string + "\n";
     console.log(string);
 }
-//Standard attack method. Deals damage, half if target blocks. Optional params available.
+//Standard attack function. Deals damage, half if target blocks. Optional params available.
 function attack(attacker,target,changedmg = 0,blockAllowed = true){
     let attackdamage = attacker.dmg;
     if(changedmg != 0){
@@ -96,6 +96,8 @@ function attack(attacker,target,changedmg = 0,blockAllowed = true){
         target.alive = false;
     }
 }
+//Function which handles player ability upgrades after rounds 3 and 5. Doubles a stat.
+//If Mana Burst is chosen, grants an extra charge.
 function abilityUpgrade(){
     printlog(`Congratulations, ${p1.username}! You have earned a stat upgrade!`);
     console.log("List of abilities:");
@@ -141,11 +143,8 @@ function spawn(){
         case 3:
             enemies.push(new Enemy("Healer",15,0,[["Heal", 2]],"caster"));
             enemies.push(new Enemy ("Shielder",15,5,[["Charge",1],["Defend"],["Defend"]],"defender"));
-            // enemies.push(new Enemy("Enemy 2",1,1,[],"aggro"));
             break;
         case 4:
-            //After Round 3, the player gets to upgrade one ability.
-            //Doubles ability effectiveness.
             chosen_upgrades = "";
             abilityUpgrade();
             enemies.push(new Enemy("Healer",25,0,[["Heal", 3],["Defend"]],"aggrocaster"));
@@ -181,7 +180,7 @@ function spawn(){
             p1.alive = false;
     }
 }
-//Method which determines how an enemy behaves based on its AI_type keyword.
+//Function which determines how an enemy behaves based on its AI_type keyword.
 function enemyAI(enemy){
     let block_prob; //decimal percent chance to block
     let cast_prob; //decimal percent chance to cast an ability
@@ -268,7 +267,7 @@ function enemyAI(enemy){
     }
     return "none";
 }
-//Display method
+//Display function
 function displayHealthBar(entity){
     process.stdout.write(`HP: ${entity.health}\n[`);
     let ratio = entity.health/entity.maxhealth;
@@ -281,7 +280,7 @@ function displayHealthBar(entity){
     }
     process.stdout.write(']\n');
 }
-//Display method
+//Display function
 function displayEnemies(){
     for(let i = 0; i < enemies.length; i++){
         console.log(`${i + 1}: ${enemies[i].username}`);
@@ -289,14 +288,14 @@ function displayEnemies(){
     }
     console.log();
 }
-//Display method
+//Display function
 function displayEnemiesNoHealthBar(){
     for(let i = 0; i < enemies.length; i++){
         console.log(`${i + 1}: ${enemies[i].username}`);
     }
     console.log();
 }
-//Method for getting player's choice of enemy to target with an attack/ability.
+//Function for getting player's choice of enemy to target with an attack/ability.
 function chooseTarget(){
     if(enemies.length == 1){
         return 0;
@@ -347,7 +346,7 @@ function inputCommand(entity,command){
             break;
     }
 }
-//Allows for ability usage by both player and enemies.
+//Ability choice function for player and enemies.
 //Ability effects are resolved in method abilityEffect().
 function useAbility(entity){
     if(entity != p1){ //enemies use random abilities.
@@ -406,6 +405,7 @@ function abilityEffect(entity,abilityUsed){
         case "Charge":
             entity.dmg += entity.abilities[abilityUsed][1];
             printlog(`-> ${entity.username} charges their attack!`);
+            printlog(`-> ${entity.username}'s attack increases by ${entity.abilities[abilityUsed][1]}!`);
             break;
         //Entity blocks for an ally. Enemy-only ability (since player has no allies).
         //Enemies will not use Defend on entities that are already blocking.
@@ -421,12 +421,11 @@ function abilityEffect(entity,abilityUsed){
         case "Summon":
             //assumes second item in tuple is the entity to be summoned.
             //creates a copy of enemy to summon
-            let entitytemplate = entity.abilities[abilityUsed][1];
-            let summonentity = structuredClone(entitytemplate);
+            let summonentity = structuredClone(entity.abilities[abilityUsed][1]);
             enemies.push(summonentity);
             printlog(`-> ${entity.username} summons ${summonentity.username}!`)
             break;
-        //Entity deals damage to a target which ignores resistances.
+        //Entity deals damage to a target which ignores blocking.
         //Has a limited number of uses (determined by the third value in the array).
         case "Mana Burst":
             if(entity.abilities[abilityUsed][2] > 0){
@@ -458,7 +457,10 @@ function abilityEffect(entity,abilityUsed){
             printlog(`-> ${target.username} health and maximum health increased by ${entity.abilities[abilityUsed][1]}.`);
             printlog(`-> ${target.username} damage increased by ${entity.abilities[abilityUsed][2]}.`);
             break;
+
+        //ability that does nothing. Why would you ever use this?
         case "none":
+            printlog(`-> ${entity.username} fizzled!`);
             break;
         default:
             printlog(`Warning: ${entity.username} has an unrecognized ability.`);
@@ -557,11 +559,8 @@ logfile += `Total turns: ${totalturns}\n`;
 logfile += `Total Game Time: ${endgameminutes}:${endgameseconds}.${endgamemillis}\n`;
 logfile += "Game log begins below. \n\n" + game_log;
 let dirnum = 1;
-if(!fs.existsSync(__dirname + "/history")){
-    fs.mkdirSync(__dirname + "/history");
-}
 if(!fs.existsSync(__dirname + "/history/" + p1.username)){
-    fs.mkdirSync(__dirname + "/history/" + p1.username);
+    fs.mkdirSync(__dirname + "/history/" + p1.username, { recursive: true });
 }
 let dirname = __dirname + `/history/${p1.username}/game_${dirnum}.txt`;
 while(fs.existsSync(dirname)){
