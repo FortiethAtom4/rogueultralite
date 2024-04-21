@@ -24,7 +24,7 @@ function Player(pname,health,dmg){
     1: Value, number (damage amt, heal amt, etc)
     2: Option (scaling number for heal/fireball, charges for mana burst)
     */
-    this.abilities = [["Heal",1,1],["Fireball",1,2],["Mana Burst",10,1,3]];
+    this.abilities = [["Heal",1,1],["Fireball",1,3],["Mana Burst",10,1,3]];
     this.alive = true;
     this.blocking = false;
 }
@@ -113,7 +113,7 @@ function abilityUpgrade(){
         printlog(`-> Attack damage increased to ${p1.dmg}.`)
         return;
     }
-    chosen_upgrades = p1.abilities[choice][0];
+    chosen_upgrades += p1.abilities[choice][0];
     printlog('\n');
     if(p1.abilities[choice][0] == "Mana Burst"){
         p1.abilities[choice][2] += 1;
@@ -143,11 +143,11 @@ function spawn(){
             chosen_upgrades = "";
             abilityUpgrade();
             enemies.push(new Enemy("Healer",25,0,[["Heal", 3],["Defend"]],"aggrocaster"));
-            enemies.push(new Enemy("Wizard",25,0,[["Fireball",4],["Fireball",4],["Heal",1]],"aggrocaster"));
+            enemies.push(new Enemy("Wizard",25,0,[["Fireball",4]],"aggrocaster"));
             enemies.push(new Enemy("Shielder",40,5,[["Defend"]],"defender"));
             break;
         case 5:
-            enemies.push(new Enemy("Boss",50,5,[["Fireball",5],["Fireball",5],["Charge",3],["Heal",10]],"spellsword"));
+            enemies.push(new Enemy("Boss",50,5,[["Fireball",5],["Fireball",5],["Heal",5]],"spellsword"));
             break;
         case 6:
             //another ability upgrade after round 5.
@@ -156,18 +156,18 @@ function spawn(){
             console.log("It only gets harder from here...");
             // summonenemy = new Enemy("Minion",5,1,[],"defensive"); - template for minion
             enemies.push(new Enemy("Minion",10,3,[],"defensive"));
-            enemies.push(new Enemy("Summoner",100,0,[
-                ["Summon",new Enemy("Minion",10,3,[],"defensive")],
-                ["Summon",new Enemy("Tank Minion",20,5,[["Defend"]],"defender")],
-                ["Summon",new Enemy("Wizard Minion",10,0,[["Fireball",5],["Empower",5,2]],"aggrocaster")]],
+            enemies.push(new Enemy("Summoner",200,0,[
+                ["Summon",new Enemy("Minion",15,5,[],"aggro")],
+                ["Summon",new Enemy("Tank Minion",30,3,[["Defend"]],"defender")],
+                ["Summon",new Enemy("Wizard Minion",15,0,[["Fireball",5],["Empower",5,2]],"aggrocaster")]],
                 "summoner"));
             enemies.push(new Enemy("Minion",10,3,[],"defensive"));
             break;
         case 7:
-            enemies.push(new Enemy("Wizard Lord",200,0,[["Fireball",3],["Fireball",3],["Empower",10,2],["Heal",5],
-            ["Summon",new Enemy("Mana Familiar",10,0,[["Mana Burst",5,3]],"aggrocaster")],
+            enemies.push(new Enemy("Wizard Lord",300,0,[["Fireball",3],["Fireball",3],["Heal",10],
+            ["Summon",new Enemy("Mana Familiar",10,0,[["Mana Burst",10,3]],"aggrocaster")],
             ["Summon",new Enemy("Revitalizing Familiar",10,0,[["Heal",10]],"aggrocaster")]],"aggrocaster"))
-            enemies.push(new Enemy("Book",75,5,[["Defend"],["Heal",5]],"spellsword"))
+            enemies.push(new Enemy("Book",150,5,[["Defend"],["Heal",5]],"spellsword"))
             break;
         default:
             printlog(`\n******Congratulations, ${p1.username}! You Win!******`);
@@ -471,18 +471,15 @@ while(p1.alive){
     //new round
     if(enemies.length == 0 && !start){
         console.log(`Round ${round} complete!\n`);
-        //at the beginning of each round, player's abilities grow stronger (except mana burst)
+        //at the beginning of each round, player's abilities grow stronger
         printlog(`${p1.username} grows stronger!`);
         p1.maxhealth += round + 2;
-        p1.dmg += 1;
+        p1.dmg += 2;
         heal(p1,p1.maxhealth/2);
         printlog(`-> Maximum health increased to ${p1.maxhealth}.`);
         printlog(`-> Attack damage increased to ${p1.dmg}.`)
         for(let i = 0; i < p1.abilities.length; i++){
-            if(p1.abilities[i][0] == "Mana Burst"){
-                p1.abilities[i][1] += p1.abilities[i][3];
-            }
-            p1.abilities[i][1] += p1.abilities[i][2];
+            p1.abilities[i][1] += p1.abilities[i][0] == "Mana Burst" ? p1.abilities[i][3] : p1.abilities[i][2];
             printlog(`-> ${p1.abilities[i][0]} strength increased to ${p1.abilities[i][1]}.`);
         }
         printlog("\n");
@@ -552,13 +549,16 @@ logfile += `Total turns: ${totalturns}\n`;
 logfile += `Total Game Time: ${endgameminutes}:${endgameseconds}.${endgamemillis}\n`;
 logfile += "Game log begins below. \n\n" + game_log;
 let dirnum = 1;
-if(!fs.existsSync(__dirname + "/logs")){
-    fs.mkdirSync(__dirname + "/logs");
+if(!fs.existsSync(__dirname + "/history")){
+    fs.mkdirSync(__dirname + "/history");
 }
-let dirname = __dirname + "/logs/log_" + dirnum + ".txt";
+if(!fs.existsSync(__dirname + "/history/" + p1.username)){
+    fs.mkdirSync(__dirname + "/history/" + p1.username);
+}
+let dirname = __dirname + `/history/${p1.username}/game_${dirnum}.txt`;
 while(fs.existsSync(dirname)){
     dirnum += 1;
-    dirname = __dirname + "/logs/log_" + dirnum + ".txt";
+    dirname = __dirname + `/history/${p1.username}/game_${dirnum}.txt`;
 }
 //records game events in a log file
 fs.writeFileSync(dirname,logfile);
