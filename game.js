@@ -546,7 +546,7 @@ if(endgamemillis < 100){
     endgamemillis = "0" + endgamemillis;
 }
 if(endgamemillis < 10){
-    endgamemillis = "0" + endgamemillis;
+    endgamemillis = "0" + endgamemillis; //theres got to be a better way to add these 0s
 }
 console.log(`Total Game Time: ${endgameminutes}:${endgameseconds}.${endgamemillis}`);
 //create log file header
