@@ -133,8 +133,8 @@ function spawn(){
             enemies.push(new Enemy("Grunt",3,1,[],"aggro"));
             break;
         case 3:
-            enemies.push(new Enemy("Healer",10,0,[["Heal", 2]],"caster"));
-            enemies.push(new Enemy ("Shielder",10,5,[["Charge",1],["Defend"],["Defend"]],"defender"));
+            enemies.push(new Enemy("Healer",15,0,[["Heal", 2]],"caster"));
+            enemies.push(new Enemy ("Shielder",15,5,[["Charge",1],["Defend"],["Defend"]],"defender"));
             // enemies.push(new Enemy("Enemy 2",1,1,[],"aggro"));
             break;
         case 4:
