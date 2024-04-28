@@ -24,7 +24,7 @@ function Player(pname,health,dmg){
     1: Value, number (damage amt, heal amt, etc)
     2: Option (scaling number for heal/fireball, charges for mana burst)
     */
-    this.abilities = [["Heal",1,1],["Fireball",1,3],["Mana Burst",10,1,3]];
+    this.abilities = [["Heal",1,1.5],["Fireball",1,3],["Mana Burst",10,1,3]];
     this.alive = true;
     this.blocking = false;
 }
@@ -162,6 +162,7 @@ function spawn(){
             // summonenemy = new Enemy("Minion",5,1,[],"defensive"); - template for minion
             enemies.push(new Enemy("Minion",10,3,[],"defensive"));
             enemies.push(new Enemy("Summoner",200,0,[
+                ["Summon",new Enemy("Minion",15,5,[],"aggro")],
                 ["Summon",new Enemy("Minion",15,5,[],"aggro")],
                 ["Summon",new Enemy("Tank Minion",30,3,[["Defend"]],"defender")],
                 ["Summon",new Enemy("Wizard Minion",15,0,[["Fireball",5],["Empower",5,2]],"aggrocaster")]],
@@ -520,10 +521,12 @@ while(p1.alive){
             enemies.splice(i,1);
             continue;
         }
-        if(enemies.length > 0){
-            inputCommand(enemies[i],enemyAI(enemies[i]));
-        }
     }
+    //Yes I have to separate these into two loops. Yes I know it sucks. No I wont change it until I find something better.
+    for(let i = 0; i < enemies.length; i++){
+        inputCommand(enemies[i],enemyAI(enemies[i]));
+    }
+
     //Prepare for next turn
     if(p1.blocking){
         p1.blocking = false;
