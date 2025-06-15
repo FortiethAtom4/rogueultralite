@@ -32,6 +32,6 @@ You heal 1 HP if you successfully block a Fireball.
 
 -FF: Surrender. 
 
-Try to beat all 9 rounds of enemies!
+Try to beat all 8 rounds of enemies!
 
 # GLHF
