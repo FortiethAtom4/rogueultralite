@@ -3,8 +3,8 @@ rogueultralite
 made by Zirconium (FortiethAtom4 on Github)
 
 # INSTALL
-1. Get Node.js.
-2. navigate to this directory in a terminal, then type `npm install`. Npm will do the heavy lifting.
+1. Get Node.js. (be sure to add it to PATH. There's a little checkmark in the installation to check for it.)
+2. Navigate to this directory in a terminal, then type `npm install`. Npm will do the heavy lifting.
 3. Boom done
 
 # HOW TO PLAY
@@ -22,15 +22,16 @@ Enter a command on each of your turns.
 Fireballs will do 0 damage to a blocking target.
 You heal 1 HP if you successfully block a Fireball.
 
--ABILITY: use an ability. There are 3 available to the player:
+-ABILITY: use an ability. There are 4 available to the player:
 1. Heal: heals you.
 2. Fireball: deals increased damage. Blocking targets take no damage.
-3. Mana Burst: deals massive damage that ignores blocks. Limited uses.
+3. Mana Burst: deals massive damage that ignores blocks. Limited uses, but charges as you attack and successfully block.
+4. Entropy: deals low damage that ignores blocks. Charges your Mana Bursts twice as fast.
 
 -NONE: pass your turn. Why would you do that?
 
 -FF: Surrender. 
 
-Try to beat all 7 rounds of enemies!
+Try to beat all 9 rounds of enemies!
 
 # GLHF

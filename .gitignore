@@ -1,4 +1,4 @@
-node_modules
-package-lock.json
-history
-node_modules
+**
+!game.js
+!package.json
+!README.md
